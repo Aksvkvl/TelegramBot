@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 import uuid
-from telebot import types
+import aiogram
 from SQL_logic import create_tuple_from_column
 
 def client(message):
