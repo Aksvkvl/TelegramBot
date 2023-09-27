@@ -1,11 +1,11 @@
 import sqlite3
-import uuid
 from datetime import datetime
 import telebot
 from telebot import types
-from SQL_logic import create_tuple_from_column
+import uuid
+import SQL_logic
 
-bot = telebot.TeleBot('5973753178:AAE42A74HzuaSOOsu9OQlivz-sBtH7ABUkI')
+bot = telebot.TeleBot('5973753178:AAG_niAMb03lkp-U4eMDkP1TDzG-Ifh2UpA')
 
 conn = sqlite3.connect('EasyConstruction.db')
 c = conn.cursor()
@@ -145,7 +145,7 @@ def push_project(message):
     global column
 
     # Получаем данные
-    data = create_tuple_from_column('queue')
+    data = SQL_logic.create_tuple_from_column('queue', 'cols', 'clientq')
 
     # Сортируем данные по номеру вопроса
     sorted_data = sorted(data, key=lambda x: int(x.split(':')[0]))
@@ -292,6 +292,7 @@ def project_id(message):
                                           "/delete_project\nВернуться к списку проектов /my_projects")
     else:
         bot.send_message(message.chat.id, "Проект не найден")
+
 
 
 bot.polling()
