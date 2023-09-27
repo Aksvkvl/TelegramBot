@@ -2,7 +2,7 @@ import sqlite3
 
 
 def create_tuple_from_column(column):
-    connection = sqlite3.connect('EasyConstruction.db')
+    connection = sqlite3.connect('/root/TelegramBot/EasyConstruction.db')
     cursor = connection.cursor()
 
     table_name = 'questions'
@@ -17,7 +17,7 @@ def create_tuple_from_column(column):
     return data_tuple
 
 
-connection = sqlite3.connect('EasyConstruction.db')
+connection = sqlite3.connect('/root/TelegramBot/EasyConstruction.db')
 cursor = connection.cursor()
 
 table_name = 'clients'
@@ -29,7 +29,7 @@ columns = [column[0] for column in cursor.fetchall()]
 
 table_name = 'questions'
 
-cursor.execute("SELECT columns FROM questions")
+cursor.execute("SELECT cols FROM questions")
 result = cursor.fetchall()
 
 # Проверяем, что результат не равен None
