@@ -1,23 +1,23 @@
 import sqlite3
 
 
-def create_tuple_from_column(column):
-    connection = sqlite3.connect('/root/TelegramBot/EasyConstruction.db')
+def create_tuple_from_column(columns):
+    connection = sqlite3.connect('EasyConstruction.db')
     cursor = connection.cursor()
 
     table_name = 'questions'
 
-    # Получаем данные из колонки
-    cursor.execute("SELECT {} FROM {}".format(column, table_name))
+    # Получаем данные из колонок queue и clientq
+    cursor.execute("SELECT queue, clientq FROM {}".format(table_name))
     result = cursor.fetchall()
 
     # Создаем кортеж из данных
-    data_tuple = tuple(row[0] for row in result)
+    data_tuple = tuple((row[0], row[1]) for row in result)
 
     return data_tuple
 
 
-connection = sqlite3.connect('/root/TelegramBot/EasyConstruction.db')
+connection = sqlite3.connect('EasyConstruction.db')
 cursor = connection.cursor()
 
 table_name = 'clients'

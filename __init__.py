@@ -23,9 +23,9 @@ def start_message(message):
 @bot.message_handler(commands=['choose_role'])
 def choose_role_message(message):
     bot.send_message(message.chat.id, "Привет! Я бот для работы с клиентами. Для начала работы, пожалуйста, выберите "
-                                      "свою роль: Клиент" "-нажмите /client, Исполнитель - нажмите /contractor, "
-                                      "Технадзор - нажмите /technical_inspector," "Поставщик - нажмите /supplier "
-                                      "соответственно.")
+                                      "свою роль: Клиент" "-нажмите /client, Исполнитель - нажмите /contractor, ")
+    # "Технадзор - нажмите /technical_inspector," "Поставщик - нажмите /supplier "
+    # "соответственно.")
 
 
 @bot.message_handler(commands=['client'])
@@ -138,23 +138,22 @@ def save_value(message):
 current_index = 0
 column = None
 
+data_tuple = SQL_logic.create_tuple_from_column(['queue', 'clientq'])
 
+
+# В функции push_project используйте data_tuple для сортировки по колонке queue
 @bot.message_handler(commands=['push_project'])
 def push_project(message):
     global current_index
     global column
 
-    # Получаем данные
-    data = SQL_logic.create_tuple_from_column('clientq')
-
     # Сортируем данные по номеру вопроса
-    sorted_data = sorted(data, key=lambda x: int(x.split(':')[0]))
+    sorted_data = sorted(data_tuple, key=lambda x: x[0])
+    print(sorted_data)
 
     if len(sorted_data) > current_index:
 
-        # Получаем текущий вопрос
-        question = sorted_data[current_index]
-        column = sorted_data[current_index].split(':')[1]
+        question = sorted_data[current_index][1]  # Получаем значение из кортежа
 
         # Отправляем вопрос пользователю
         bot.send_message(chat_id=message.chat.id, text=question)
@@ -166,7 +165,7 @@ def push_project(message):
         current_index += 1
 
     else:
-        current_index = 0
+        # current_index = 0
         bot.send_message(chat_id=message.chat.id, text="Вопросы закончились. Теперь вы можете перейти к своим проектам "
                                                        "/my_projects")
 
@@ -202,6 +201,7 @@ def update_db(column, answer, current_project_id):
 
 @bot.message_handler(commands=['edit_project'])
 def edit_project(message):
+    global current_project_id
     project_id = current_project_id
     if project_id:
         conn = sqlite3.connect('EasyConstruction.db')
@@ -231,6 +231,7 @@ def edit_project(message):
 
 @bot.message_handler(commands=['project_data'])
 def project_data(message):
+    global current_project_id
     project_id = current_project_id
     if project_id:
         conn = sqlite3.connect('EasyConstruction.db')
@@ -259,6 +260,7 @@ def project_data(message):
 
 @bot.message_handler(commands=['delete_project'])
 def delete_project(message):
+    global current_project_id
     project_id = current_project_id
     if project_id:
         conn = sqlite3.connect('EasyConstruction.db')
@@ -292,7 +294,6 @@ def project_id(message):
                                           "/delete_project\nВернуться к списку проектов /my_projects")
     else:
         bot.send_message(message.chat.id, "Проект не найден")
-
 
 
 bot.polling()
