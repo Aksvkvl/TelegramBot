@@ -16,4 +16,4 @@ ssh_key="/Users/Shared/TelegramBot/easyC"
 rsync -avz --delete --exclude='.DS_Store' --exclude='._*' -e "ssh -i $ssh_key" "$local_folder" "$remote_server:$remote_folder"
 
 # Выполняем команду на удаленном сервере
-ssh -i "$ssh_key" "$remote_server" "nohup bash $remote_folder/restart_bot.sh > $remote_folder/restart_bot.log 2>&1 &"
+ssh -i "$ssh_key" "$remote_server" "systemctl restart Easy.service"

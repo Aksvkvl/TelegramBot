@@ -116,7 +116,7 @@ def push_project(message):
     global column
 
     # Получаем данные
-    data = create_tuple_from_column('queue', 'cols', 'clientq')
+    data = create_tuple_from_column('cols', 'clientq')
 
     # Сортируем данные по номеру вопроса
     sorted_data = sorted(data, key=lambda x: int(x.split(':')[0]))

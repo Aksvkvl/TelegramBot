@@ -1,9 +1,11 @@
+# main telegrambot code
 import sqlite3
 from datetime import datetime
 import telebot
 from telebot import types
 import uuid
 import SQL_logic
+import contractor
 
 bot = telebot.TeleBot('5973753178:AAG_niAMb03lkp-U4eMDkP1TDzG-Ifh2UpA')
 
@@ -27,6 +29,40 @@ def choose_role_message(message):
     # "Технадзор - нажмите /technical_inspector," "Поставщик - нажмите /supplier "
     # "соответственно.")
 
+
+@bot.message_handler(commands=['contractor'])
+def contractor_message(message):
+    contractor.greeting_contractor(message)
+
+
+@bot.message_handler(commands=['builder_projects'])
+def builder_projects(message):
+    contractor.builder_projects(message)
+
+
+@bot.message_handler(commands=['builder_price_add_project'])
+def builder_price_add_project(message):
+    contractor.builder_price_add_project(message)
+
+
+@bot.message_handler(commands=['view_builder_project'])
+def view_builder_project(message):
+    contractor.view_builder_project(message)
+
+
+@bot.message_handler(commands=['builder_select_project'])
+def builder_select_project(message):
+    contractor.builder_select_project(message)
+
+
+@bot.message_handler(commands=['builder_project_data'])
+def builder_project_data(message):
+    contractor.builder_project_data(message)
+
+
+@bot.message_handler(commands=['edit_builder_project'])
+def edit_builder_project(message):
+    contractor.edit_builder_project(message)
 
 @bot.message_handler(commands=['client'])
 def client(message):
@@ -138,7 +174,7 @@ def save_value(message):
 current_index = 0
 column = None
 
-data_tuple = SQL_logic.create_tuple_from_column(['queue', 'clientq'])
+data_tuple = SQL_logic.create_tuple_from_column()
 
 
 # В функции push_project используйте data_tuple для сортировки по колонке queue
@@ -154,6 +190,7 @@ def push_project(message):
     if len(sorted_data) > current_index:
 
         question = sorted_data[current_index][1]  # Получаем значение из кортежа
+        column = sorted_data[current_index][2]  # Получаем значение из командновона
 
         # Отправляем вопрос пользователю
         bot.send_message(chat_id=message.chat.id, text=question)
@@ -166,8 +203,9 @@ def push_project(message):
 
     else:
         # current_index = 0
-        bot.send_message(chat_id=message.chat.id, text="Вопросы закончились. Теперь вы можете перейти к своим проектам "
-                                                       "/my_projects")
+        bot.send_message(chat_id=message.chat.id, text=f"Вопросы закончились. Теперь вы можете перейти к текущему "
+                                                       f"проекту \n/project_data \nили к остальным своим "
+                                                       f"проектам\n/my_projects")
 
 
 def process_answer(message, column, current_project_id):
