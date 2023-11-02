@@ -1,4 +1,4 @@
-#SQL logic module
+# SQL logic module
 import sqlite3
 
 
@@ -18,8 +18,6 @@ def create_tuple_from_column():
 
     return data_tuple
 
-
-import sqlite3
 
 def update_table(table_name):
     connection = sqlite3.connect('EasyConstruction.db')
@@ -66,7 +64,33 @@ def update_table(table_name):
 
     connection.close()
 
+
 # Теперь вы можете вызвать эту функцию для 'clients' и 'builders'
 update_table('clients')
 update_table('builders')
+
+
+def create_project(user_id, project_name):
+    def generate_project_id():
+        project_id = str(uuid.uuid4()).replace("-", "")[:256]
+        return project_id
+
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    project_id = generate_project_id()
+    conn = sqlite3.connect('EasyConstruction.db')
+    c = conn.cursor()
+
+    # Определяем таблицу в зависимости от типа пользователя
+    if user_id in builders:
+        table_name = "builders"
+    else:
+        table_name = "clients"
+
+    c.execute(f"INSERT INTO {table_name}(client_id, project_id, project_name, created_date, updated_date) VALUES(?,?,"
+              f"?,?,?)",
+              (user_id, project_id, project_name, current_date, current_date))
+    conn.commit()
+    conn.close()
+
+    return project_name, project_id
 

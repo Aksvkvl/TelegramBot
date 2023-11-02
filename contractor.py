@@ -8,9 +8,8 @@ current_project_id = {}
 
 # Приветствие ддля раздела строителей
 def greeting_contractor(message):
-    message.reply_text("Добро пожаловать в EasyConstruction! Теперь вы можете сформировать свой прайс /builder_price"
-                       "просматривать ваши действующие проекты /builder_projects")
-    return message
+    return "Добро пожаловать в EasyConstruction! Теперь вы можете сформировать свой прайс /builder_price " \
+           "просматривать ваши действующие проекты /builder_projects"
 
 
 # Раздел работы с прайсами

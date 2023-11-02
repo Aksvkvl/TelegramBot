@@ -5,8 +5,7 @@ import telebot
 from telebot import types
 import uuid
 import SQL_logic
-import contractor
-
+from classes import MessageButtons
 bot = telebot.TeleBot('5973753178:AAG_niAMb03lkp-U4eMDkP1TDzG-Ifh2UpA')
 
 conn = sqlite3.connect('EasyConstruction.db')
@@ -18,66 +17,83 @@ client_id = {}
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Привет! Я помогу организовать работу. Для начала, пожалуйста, выберите свою '
-                                      'роль /choose_role')
+    # Создайте экземпляр класса MessageButtons
+    message_buttons = MessageButtons(message.chat.id, bot, types)
 
+    # Определите текст и кнопки для отправки
+    text = 'Привет! Я помогу организовать работу. Для начала, пожалуйста, выберите свою роль:'
+    buttons = [
+        ("Клиент", "client", "/client"),
+        ("Исполнитель", "builders", "/builders")
+    ]
 
-@bot.message_handler(commands=['choose_role'])
-def choose_role_message(message):
-    bot.send_message(message.chat.id, "Привет! Я бот для работы с клиентами. Для начала работы, пожалуйста, выберите "
-                                      "свою роль: Клиент" "-нажмите /client, Исполнитель - нажмите /contractor, ")
+    # Используйте экземпляр класса для отправки сообщения с кнопками
+    message_buttons.send(text, buttons)
+
     # "Технадзор - нажмите /technical_inspector," "Поставщик - нажмите /supplier "
     # "соответственно.")
 
 
+@bot.message_handler(commands=['client'])
+def client(message):
+    global states, client_id
+    states[message.chat.id] = "clients"
+    bot.send_message(message.chat.id,
+                     "Отлично! Вы выбрали раздел клиента! Теперь вы можете просмотреть свои проекты" "по команде "
+                     "/my_projects или создать новый проект по команде /new_project")
+
+
 @bot.message_handler(commands=['contractor'])
-def contractor_message(message):
-    contractor.greeting_contractor(message)
+def contractor(message):
+    states[message.chat.id] = "builders"
+    client_id[message.chat.id] = message.chat.id
+    bot.send_message(message.chat.id, "Добро пожаловать в EasyConstruction! Теперь вы можете сформировать свой прайс "
+                                      "/builder_default_price "
+                                      "просматривать ваши действующие проекты /builder_projects")
 
 
 @bot.message_handler(commands=['builder_projects'])
 def builder_projects(message):
-    contractor.builder_projects(message)
-
-
-@bot.message_handler(commands=['builder_price_add_project'])
-def builder_price_add_project(message):
-    contractor.builder_price_add_project(message)
-
-
-@bot.message_handler(commands=['view_builder_project'])
-def view_builder_project(message):
-    contractor.view_builder_project(message)
-
-
-@bot.message_handler(commands=['builder_select_project'])
-def builder_select_project(message):
-    contractor.builder_select_project(message)
-
-
-@bot.message_handler(commands=['builder_project_data'])
-def builder_project_data(message):
-    contractor.builder_project_data(message)
-
-
-@bot.message_handler(commands=['edit_builder_project'])
-def edit_builder_project(message):
-    contractor.edit_builder_project(message)
-
-@bot.message_handler(commands=['client'])
-def client(message):
-    states[message.chat.id] = "client"
     client_id[message.chat.id] = message.chat.id
-    bot.send_message(message.chat.id,
-                     "Отлично! Вы выбрали раздел клиента! Теперь вы можете просмотреть свои проекты" "по команде "
-                     "/my_projects или создать новый проект по команде /new_project")
+    bot.send_message(message.chat.id, "Здесь можно добавить свои выполненные объекты для того, "
+                                      "чтобы сформировался средний прайс ваших цен\n"
+                                      "Для добавления вашего проекта /builder_new_project\n"
+                                      "Для изменения вашего проекта /builder_edit_project\n"
+                                      "Для удаления вашего проекта /builder_delete_project\n"
+                                      "Для просмотра вашего проекта /builder_view_project\n")
+
+
+@bot.message_handler(commands=['builder_new_project'])
+def builder_new_project(message):
+    builder_id_input = message.chat.id
+    bot.send_message(builder_id_input, "Введите имя проекта:")
+    bot.register_next_step_handler(message, builder_project_name_handler, builder_id_input)
+
+
+def builder_project_name_handler(message, builder_id_input):
+    def generate_project_id():
+        project_id = str(uuid.uuid4()).replace("-", "")[:256]
+        return project_id
+
+    project_name_input = message.text
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    project_id = generate_project_id()
+    conn = sqlite3.connect('EasyConstruction.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO builders(client_id, project_id, project_name, created_date, updated_date) VALUES(?,?,?,?,?)",
+              (builder_id_input, project_id, project_name_input, current_date, current_date))
+    conn.commit()
+    conn.close()
+    bot.send_message(builder_id_input, "Вы создали проект " + project_name_input + ". Теперь вы можете просматривать "
+                                                                                   "свои проекты "
+                                                                                   "/builder_price_view_project")
 
 
 @bot.message_handler(commands=['new_project'])
 def new_project(message):
     client_id_input = message.chat.id
     bot.send_message(client_id_input, "Введите имя проекта:")
-    bot.register_next_step_handler(message, project_name_handler, client_id_input)
+    bot.register_next_step_handler(message, builder_project_name_handler, client_id_input)
 
 
 def project_name_handler(message, client_id_input):
@@ -331,7 +347,7 @@ def project_id(message):
                                           "данные /push_project" "\nИли удалить проект используя команду "
                                           "/delete_project\nВернуться к списку проектов /my_projects")
     else:
-        bot.send_message(message.chat.id, "Проект не найден")
+        bot.send_message(message.chat.id, "Проект не найден из прожект ИД")
 
 
 bot.polling()
